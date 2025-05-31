@@ -1,0 +1,52 @@
+# Visual Studio / Rider
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# NuGet / Paket
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test Results / Logs
+TestResults/
+*.log
+
+# ReSharper / Rider
+_ReSharper*/
+*.DotSettings.user
+
+# SQL
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.sql
+
+# Local DB / Ef Core User secrets
+*.dbmdl
+
+# Others
+*.pidb
+*.scc
+*.cache
+*.vspscc
+*.vssscc
