@@ -22,7 +22,7 @@ namespace Pizzeria.Infrastructure.Identities
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Ingredient>()
-               .HasMany(i => i.Products)
+               .HasMany(i => i.Items)
                .WithMany(p => p.Ingredients);
 
             modelBuilder.Entity<Item>()

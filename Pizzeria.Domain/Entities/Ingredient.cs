@@ -10,7 +10,7 @@ namespace Pizzeria.Domain.Entities
         [Required]
         [StringLength(100)]
         public string IngredientName { get; set; }
-        public ICollection<Item> Products { get; set; } = new List<Item>();
+        public ICollection<Item> Items { get; set; } = new List<Item>();
 
     }
 }
