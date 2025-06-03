@@ -63,7 +63,17 @@ namespace Pizzeria.Core.Services
 
         public async Task<UserDTO.GetUserDTO> GetUser(string userId)
         {
-            throw new NotImplementedException();
+           var authUser = await _userManager.FindByIdAsync(userId);
+
+            if (authUser == null)
+                return null;
+
+            return new UserDTO.GetUserDTO
+            {
+                UserName = authUser.UserName,
+                Email = authUser.Email,
+                Phone = authUser.PhoneNumber
+            };
         }
 
         public async Task<string> Login(UserDTO.LoginUserDTO user)
@@ -90,18 +100,58 @@ namespace Pizzeria.Core.Services
 
             var result = await _userManager.CreateAsync(newUser, user.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                if (!await _roleManager.RoleExistsAsync(role))
-                {
-                    await _roleManager.CreateAsync(new IdentityRole(role));
-                }
-                await _userManager.AddToRoleAsync(newUser, role);
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception("User creation failed: " + errors);
             }
 
-            return result.Succeeded;
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(role));
+            }
 
+            var roleResult = await _userManager.AddToRoleAsync(newUser, role);
+            if (!roleResult.Succeeded)
+            {
+                var roleErrors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                throw new Exception("Adding user to role failed: " + roleErrors);
+            }
+
+            return true;
         }
+
+
+        //public async Task<bool> Register(UserDTO.CreateUserDTO user, string role)
+        //{
+        //    var newUser = new ApplicationUser()
+        //    {
+        //        Email = user.Email,
+        //        UserName = user.UserName,
+        //        PhoneNumber = user.Phone,
+        //    };
+
+        //    var result = await _userManager.CreateAsync(newUser, user.Password);
+
+        //    if (result.Succeeded)
+        //    {
+        //        // DEBUG: Skriv ut felen
+        //        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        //        throw new Exception("User creation failed: " + errors);
+        //    }
+
+
+        //    {
+        //        if (!await _roleManager.RoleExistsAsync(role))
+        //        {
+        //            await _roleManager.CreateAsync(new IdentityRole(role));
+        //        }
+        //        await _userManager.AddToRoleAsync(newUser, role);
+        //    }
+
+        //    return result.Succeeded;
+
+        //}
 
         public async Task<bool> Update(UserDTO.UpdateUserDTO user, string userId)
         {

@@ -39,8 +39,10 @@ namespace Pizzeria.API.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("api/register")]
+
         public async Task<IActionResult> Register(CreateUserDTO user)
         {
+            
             var result = await _accountService.Register(user, "RegularUser");
 
             if (!result)
@@ -49,7 +51,8 @@ namespace Pizzeria.API.Controllers
             return Ok("User created");
         }
 
-        [HttpPut]
+
+            [HttpPut]
         [Authorize]
         [Route("api/update-user")]
         public async Task<IActionResult> Update(UpdateUserDTO user)

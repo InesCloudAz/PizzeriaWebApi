@@ -1,4 +1,5 @@
 ﻿namespace Pizzeria.Domain.DTO
+
 {
     public class UserDTO
     {
