@@ -7,7 +7,7 @@ namespace Pizzeria.Domain.Entities
     {
 
         public List<Order> Orders { get; set; }
-        public int BonustPoints { get; set; }
+        public int BonusPoints { get; set; }
     }
 }
 

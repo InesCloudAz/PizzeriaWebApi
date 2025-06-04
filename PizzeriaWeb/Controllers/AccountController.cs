@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Pizzeria.Core.Interfaces;
+using Pizzeria.Domain.Entities;
+using Pizzeria.Infrastructure.Identities;
 using System.Security.Claims;
 using static Pizzeria.Domain.DTO.UserDTO;
 
@@ -12,10 +16,14 @@ namespace Pizzeria.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserContext _context;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, UserManager<ApplicationUser> userManager, ApplicationUserContext context)
         {
             _accountService = accountService;
+            _userManager = userManager;
+            _context = context;
         }
 
 
@@ -76,21 +84,61 @@ namespace Pizzeria.API.Controllers
         }
 
         [HttpGet("api/get-all-users")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var users = _userManager.Users.ToList();
+            var userList = new List<object>();
 
-            if (userId == null)
-                return Unauthorized("User ID not found");
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
 
-            var result = await _accountService.GetUser(userId);
+                var userOrders = await _context.Orders
+                    .Where(o => o.User.Id == user.Id)
+                    .ToListAsync();
 
-            if (result == null)
-                return NotFound("Invalid username or password");
+                var orderCount = userOrders.Count;
+                var lastOrderDate = userOrders
+                    .OrderByDescending(o => o.CreatedAt) 
+                    .FirstOrDefault()?.CreatedAt;
 
-            return Ok(result);
+                userList.Add(new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    BonusPoints = user.BonusPoints,
+                    Roles = roles,
+                    OrderCount = orderCount,
+                    LastOrderDate = lastOrderDate
+                });
+            }
+
+            return Ok(userList);
+
+            //var users = _userManager.Users.ToList();
+
+            //var userList = new List<object>();
+
+            //foreach (var user in users)
+            //{
+            //    var roles = await _userManager.GetRolesAsync(user);
+
+            //    userList.Add(new
+            //    {
+            //        user.Id,
+            //        user.UserName,
+            //        user.Email,
+            //        user.BonusPoints,
+            //        Roles = roles
+            //    });
+            //}
+
+            //return Ok(userList);
+
+
         }
 
         [HttpPost]
@@ -114,6 +162,30 @@ namespace Pizzeria.API.Controllers
 
             return Ok("User is regular now");
         }
+
+        [HttpGet("api/user-info")]
+        [Authorize(Roles = "RegularUser,PremiumUser")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return NotFound("User not found");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.BonusPoints,
+                Roles = roles
+            });
+        }
+
 
     }
 }

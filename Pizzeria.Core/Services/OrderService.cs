@@ -14,14 +14,14 @@ namespace Pizzeria.Core.Services
             _repo = repo;
         }
 
-        public async Task AddOrder(OrderDTO.AddOrderDTO orderDTO, string userId)
+        public async Task<int> AddOrder(OrderDTO.AddOrderDTO orderDTO, string userId)
         {
-            await _repo.AddOrder(orderDTO, userId);
+            return await _repo.AddOrder(orderDTO, userId);
         }
 
-        public async Task AddPremiumOrder(OrderDTO.AddOrderDTO orderDTO, string userId)
+        public async Task<int> AddPremiumOrder(OrderDTO.AddOrderDTO orderDTO, string userId)
         {
-            await _repo.AddPremiumOrder(orderDTO, userId);
+            return await _repo.AddPremiumOrder(orderDTO, userId);
         }
 
         public async Task DeleteOrder(int orderID)
@@ -38,5 +38,7 @@ namespace Pizzeria.Core.Services
         {
             await _repo.UpdateOrderStatus(orderID, delivered);
         }
+
+        
     }
 }

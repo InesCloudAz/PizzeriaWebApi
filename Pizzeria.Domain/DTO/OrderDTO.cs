@@ -13,7 +13,10 @@ namespace Pizzeria.Core.DTO
         public class GetOrderDTO
         {
             public int Price { get; set; }
+            public int BonusPoints { get; set; }
+
             public ICollection<GetItemDTO> Items { get; set; } = new List<GetItemDTO>();
+
         }
     }
 }

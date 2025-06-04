@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Pizzeria.Core.DTO;
 using Pizzeria.Domain.Entities;
 using Pizzeria.Infrastructure.Identities;
@@ -8,17 +9,20 @@ using static Pizzeria.Domain.DTO.ItemDTO;
 
 namespace Pizzeria.Infrastructure.Repos
 {
-    internal class OrderRepo : IOrderRepo
+    public class OrderRepo : IOrderRepo
     {
 
         private readonly ApplicationUserContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderRepo(ApplicationUserContext context)
+        public OrderRepo(ApplicationUserContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+
         }
 
-        public async Task AddOrder(OrderDTO.AddOrderDTO orderDto, string userId)
+        public async Task <int> AddOrder(OrderDTO.AddOrderDTO orderDto, string userId)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == userId);
             if (user == null)
@@ -40,10 +44,13 @@ namespace Pizzeria.Infrastructure.Repos
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+            return user.BonusPoints;
         }
 
-        public async Task AddPremiumOrder(OrderDTO.AddOrderDTO orderDto, string userId)
+        public async Task<int> AddPremiumOrder(OrderDTO.AddOrderDTO orderDto, string userId)
         {
+
+
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == userId);
             if (user == null) throw new ArgumentException($"No user found with ID {userId}");
 
@@ -54,11 +61,11 @@ namespace Pizzeria.Infrastructure.Repos
             var entireItems = items.Count;
             var fullPrice = items.Sum(p => p.Price);
 
-            if (user.BonustPoints >= 100 && items.Any())
+            if (user.BonusPoints >= 100 && items.Any())
             {
                 var baseItemPrice = items.Min(p => p.Price);
                 fullPrice -= baseItemPrice;
-                user.BonustPoints -= 100;
+                user.BonusPoints -= 100;
             }
 
             if (entireItems >= 3)
@@ -68,7 +75,11 @@ namespace Pizzeria.Infrastructure.Repos
 
             if (fullPrice < 0) fullPrice = 0;
 
-            user.BonustPoints += entireItems * 10;
+           
+
+            user.BonusPoints += entireItems * 10;
+
+           
 
             var order = new Order
             {
@@ -79,8 +90,14 @@ namespace Pizzeria.Infrastructure.Repos
 
             };
 
+
+            await _userManager.UpdateAsync(user);
+
             await _context.Orders.AddAsync(order);
+
             await _context.SaveChangesAsync();
+
+            return user.BonusPoints;
         }
 
         public async Task<List<OrderDTO.GetOrderDTO>> GetAuthUserOrders(string userId)
@@ -89,8 +106,9 @@ namespace Pizzeria.Infrastructure.Repos
             if (user == null) throw new ArgumentException($"No user found with ID {userId}");
 
             var orders = await _context.Orders
-                .Where(o => o.User == user)
+                .Where(o => o.User.Id == userId)
                 .Include(o => o.Items)
+                .Include(o => o.User)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -101,7 +119,9 @@ namespace Pizzeria.Infrastructure.Repos
                 {
                     ItemName = p.ItemName,
                     Price = p.Price
-                }).ToList()
+                }).ToList(),
+
+                BonusPoints = o.User.BonusPoints
             }).ToList();
 
             return orderDto;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pizzeria.Infrastructure.Identities;
 
@@ -11,9 +12,11 @@ using Pizzeria.Infrastructure.Identities;
 namespace Pizzeria.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationUserContext))]
-    partial class ApplicationUserContextModelSnapshot : ModelSnapshot
+    [Migration("20250603123559_FixedFromBonustPointsToBonusPoint")]
+    partial class FixedFromBonustPointsToBonusPoint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -322,9 +325,6 @@ namespace Pizzeria.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("DeliveryStatus")
                         .HasColumnType("bit");

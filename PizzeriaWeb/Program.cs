@@ -41,6 +41,14 @@ builder.Services.AddInfrastructureDI();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    await IdentitySeeder.SeedRolesAndAdminAsync(userManager, roleManager);
+}
+
 
 
 
@@ -60,7 +68,8 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-// Skapa Admin vid uppstart
+
+// Seedar roller och admin-användare
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -68,8 +77,22 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-    await SeedAdminUser(userManager, roleManager);
+    await IdentitySeeder.SeedRolesAndAdminAsync(userManager, roleManager);
+    await IdentitySeeder.SeedAdminUserAsync(userManager);
 }
+
+
+
+//// Skapar Admin vid uppstart
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+
+//    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+//    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+//    await SeedAdminUser(userManager, roleManager);
+//}
 
 app.Run();
 
@@ -81,11 +104,11 @@ async Task SeedAdminUser(UserManager<ApplicationUser> userManager, RoleManager<I
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 
-    if (!await roleManager.RoleExistsAsync("RegularUser"))
-        await roleManager.CreateAsync(new IdentityRole("RegularUser"));
+    //if (!await roleManager.RoleExistsAsync("RegularUser"))
+    //    await roleManager.CreateAsync(new IdentityRole("RegularUser"));
 
-    if (!await roleManager.RoleExistsAsync("PremiumUser"))
-        await roleManager.CreateAsync(new IdentityRole("PremiumUser"));
+    //if (!await roleManager.RoleExistsAsync("PremiumUser"))
+    //    await roleManager.CreateAsync(new IdentityRole("PremiumUser"));
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -106,6 +129,4 @@ async Task SeedAdminUser(UserManager<ApplicationUser> userManager, RoleManager<I
         }
     }
 }
-//slutar här
 
-//app.Run();

@@ -11,18 +11,7 @@ namespace Pizzeria.Infrastructure
                                                            IConfiguration configuration
                                                    )
         {
-            //            var connString = configuration["pizzeriaconnstring"];
-
-            //            services.AddDbContext<ApplicationUserContext>(options =>
-
-            //                    options.UseSqlServer(connString)
-
-            //                );
-            //            services.AddDbContext<ApplicationUserContext>(options =>
-            //                options.UseSqlServer(connString, x => x.MigrationsAssembly("Pizzeria.Infrastructure"))
-            //);
-
-            //            return services;
+            
 
             var connString = configuration["pizzeriaconnstring"];
 

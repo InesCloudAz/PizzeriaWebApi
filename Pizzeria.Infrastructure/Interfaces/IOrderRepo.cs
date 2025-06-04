@@ -4,8 +4,8 @@ namespace Pizzeria.Infrastructure.Interfaces
 {
     public interface IOrderRepo
     {
-        Task AddOrder(AddOrderDTO orderDto, string userId);
-        Task AddPremiumOrder(AddOrderDTO orderDto, string userId);
+        Task<int> AddOrder(AddOrderDTO orderDto, string userId);
+        Task<int> AddPremiumOrder(AddOrderDTO orderDto, string userId);
         Task<List<GetOrderDTO>> GetAuthUserOrders(string userId);
         Task DeleteOrder(int orderId);
         Task UpdateOrderStatus(int orderId, bool isDelivered);

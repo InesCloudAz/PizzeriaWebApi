@@ -33,19 +33,25 @@ namespace Pizzeria.API.Controllers
             if (userId == null)
                 return Unauthorized("Missing authentication");
 
+            int bonusPoints;
+
             if (User.IsInRole("PremiumUser"))
             {
+                bonusPoints = await _orderService.AddPremiumOrder(orderDTO, userId);
 
-                await _orderService.AddPremiumOrder(orderDTO, userId);
-                return Created();
+                //await _orderService.AddPremiumOrder(orderDTO, userId);
+                //return Created();
             }
             else
             {
 
-                await _orderService.AddOrder(orderDTO, userId);
-                return Created();
+                bonusPoints = await _orderService.AddOrder(orderDTO, userId);
             }
+            //await _orderService.AddOrder(orderDTO, userId);
+            //return Created();
+            return Ok(new { Message = "Order created", BonusPoints = bonusPoints });
         }
+        
 
         [HttpGet]
         [Authorize]
